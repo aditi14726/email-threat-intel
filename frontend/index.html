@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AegisMail | Email Threat Detection & Forensic Intelligence</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Leaflet.js Map CSS & JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        code, pre, .font-mono { font-family: 'JetBrains Mono', monospace; }
+        #map { height: 380px; border-radius: 0.75rem; background: #0b0f19; }
+        
+        /* Smooth Circular Gauge */
+        .gauge-circle {
+            transition: stroke-dashoffset 1s cubic-bezier(0.4, 0, 0.2, 1), stroke 0.5s ease;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: #090d16; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #334155; }
+    </style>
+</head>
+<body class="bg-[#080c14] text-slate-100 min-h-screen flex flex-col selection:bg-indigo-500/30 selection:text-indigo-300">
+
+    <!-- Top Navigation Bar (Electric Indigo & Slate) -->
+    <header class="bg-[#0d131f]/90 backdrop-blur-md border-b border-slate-800/80 sticky top-0 z-50 py-3 px-6 shadow-xl">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            
+            <!-- Brand Logo -->
+            <div class="flex items-center space-x-3">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-cyan-500 p-[1px] shadow-lg shadow-indigo-500/20">
+                    <div class="w-full h-full bg-[#0d131f] rounded-[11px] flex items-center justify-center">
+                        <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex items-center space-x-2">
+                        <span class="text-lg font-extrabold tracking-tight text-white">
+                            AegisMail
+                        </span>
+                        <span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                            DFIR Platform
+                        </span>
+                    </div>
+                    <p class="text-[11px] text-slate-400">Email Threat Forensics & Origin Verification</p>
+                </div>
+            </div>
+
+            <!-- Live Status Beacon -->
+            <div class="flex items-center space-x-3">
+                <div class="flex items-center space-x-2 px-3 py-1 rounded-full bg-slate-900 border border-slate-800 text-xs">
+                    <span class="relative flex h-2 w-2">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    </span>
+                    <span class="text-slate-300 font-medium text-[11px]">System Ready</span>
+                </div>
+            </div>
+
+        </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="flex-grow max-w-7xl mx-auto w-full p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Left Panel: Ingestion Console (4 Cols) -->
+        <div class="lg:col-span-4 space-y-5">
+            
+            <div class="bg-[#0f172a]/70 backdrop-blur-xl border border-slate-800 rounded-2xl p-5 shadow-2xl relative overflow-hidden">
+                <div class="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-indigo-500 via-cyan-500 to-emerald-500"></div>
+
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-xs uppercase tracking-wider font-bold text-slate-300 flex items-center space-x-2">
+                        <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                        </svg>
+                        <span>Analyze Email</span>
+                    </h2>
+                    <span class="text-[10px] text-slate-500 font-mono">RFC 5322 Ingest</span>
+                </div>
+
+                <!-- Input Switcher (Indigo Accent) -->
+                <div class="grid grid-cols-2 p-1 bg-[#090d16] rounded-xl border border-slate-800/80 mb-4 text-xs font-semibold">
+                    <button id="toggle-paste" class="py-2 rounded-lg bg-indigo-600 text-white shadow-md shadow-indigo-600/30 transition-all duration-150" onclick="setIngestMode('paste')">
+                        Raw Text
+                    </button>
+                    <button id="toggle-file" class="py-2 rounded-lg text-slate-400 hover:text-slate-200 transition-all duration-150" onclick="setIngestMode('file')">
+                        Upload .EML
+                    </button>
+                </div>
+
+                <!-- Mode 1: Paste Textarea -->
+                <div id="panel-paste" class="space-y-3">
+                    <div class="space-y-1.5">
+                        <div class="flex justify-between items-center">
+                            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Select Test Scenario:</label>
+                            <span class="text-[10px] text-cyan-400 font-mono">1-Click Auto Load</span>
+                        </div>
+                        <div class="grid grid-cols-3 gap-1.5 text-[10px] font-bold">
+                            <button onclick="loadPreset('clean')" class="py-1.5 px-1 rounded-lg bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 hover:bg-emerald-500/20 transition text-center truncate">
+                                ✓ GitHub (Safe)
+                            </button>
+                            <button onclick="loadPreset('bec')" class="py-1.5 px-1 rounded-lg bg-amber-500/10 border border-amber-500/25 text-amber-400 hover:bg-amber-500/20 transition text-center truncate">
+                                ⚠ CEO Wire Fraud
+                            </button>
+                            <button onclick="loadPreset('msft')" class="py-1.5 px-1 rounded-lg bg-rose-500/10 border border-rose-500/25 text-rose-400 hover:bg-rose-500/20 transition text-center truncate">
+                                ✕ MSFT Harvest
+                            </button>
+                        </div>
+                    </div>
+                    <textarea id="raw-headers" rows="10" placeholder="Paste full email text including headers here..." class="w-full bg-[#080c14] text-slate-200 font-mono text-[11px] border border-slate-800 rounded-xl p-3.5 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition duration-150 leading-relaxed"></textarea>
+                </div>
+
+                <!-- Mode 2: File Dropzone (Hidden by default) -->
+                <div id="panel-file" class="hidden space-y-3">
+                    <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Select .EML File</label>
+                    <div class="border-2 border-dashed border-slate-700 hover:border-indigo-500/80 rounded-xl p-8 text-center bg-[#080c14]/50 cursor-pointer transition duration-150 group" onclick="document.getElementById('eml-file').click()">
+                        <svg class="w-8 h-8 mx-auto text-slate-500 group-hover:text-indigo-400 transition mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                        </svg>
+                        <p class="text-xs text-slate-300 font-semibold" id="file-label">Click to browse or drop .eml file</p>
+                        <p class="text-[10px] text-slate-500 mt-1">RFC-compliant email file</p>
+                        <input type="file" id="eml-file" accept=".eml" class="hidden" onchange="updateFileName(this)" />
+                    </div>
+                </div>
+
+                <!-- Submit Button (Electric Indigo & Cyan Gradient) -->
+                <button id="btn-analyze" class="w-full mt-4 bg-gradient-to-r from-indigo-600 via-indigo-500 to-cyan-500 hover:from-indigo-500 hover:to-cyan-400 text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-indigo-600/25 hover:shadow-indigo-600/40 transition-all duration-200 flex items-center justify-center space-x-2 text-xs tracking-wider uppercase">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                    <span>Run Forensic Inspection</span>
+                </button>
+            </div>
+
+            <!-- Features Summary -->
+            <div class="bg-[#0f172a]/50 border border-slate-800/60 rounded-2xl p-4.5 text-xs text-slate-400 space-y-2">
+                <div class="font-bold text-slate-300 uppercase tracking-wider text-[10px] flex items-center space-x-1.5">
+                    <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+                    <span>Automated Security Pipeline</span>
+                </div>
+                <div class="space-y-1.5 text-[11px] text-slate-400">
+                    <div class="flex items-center space-x-2">
+                        <span class="text-indigo-400 font-bold">01.</span>
+                        <span>MTA Relay Hop Re-assembly & Public IP Isolation</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="text-indigo-400 font-bold">02.</span>
+                        <span>Cryptographic SPF / DKIM / DMARC Verification</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="text-indigo-400 font-bold">03.</span>
+                        <span>Psychological Urgency & IP Hyperlink Flagging</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right Panel: Forensic Intelligence Dashboard (8 Cols) -->
+        <div class="lg:col-span-8 flex flex-col space-y-5">
+            
+            <!-- Empty State / Standby -->
+            <div id="results-empty" class="bg-[#0f172a]/40 border border-slate-800/60 rounded-2xl p-12 text-center flex flex-col items-center justify-center min-h-[540px] shadow-xl">
+                <div class="w-16 h-16 rounded-2xl bg-[#0d131f] border border-slate-800 flex items-center justify-center mb-4 text-indigo-400 shadow-xl">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-base font-bold text-slate-200">Awaiting Email Ingestion</h3>
+                <p class="text-slate-500 max-w-sm mt-1.5 text-xs leading-relaxed">
+                    Click <span class="text-cyan-400 font-semibold cursor-pointer" onclick="loadSamplePhish()">"Load Sample Threat"</span> on the left to immediately inspect a live spoofed phishing attack.
+                </p>
+            </div>
+
+            <!-- Active Results Dashboard (Hidden until scan) -->
+            <div id="results-content" class="hidden space-y-5">
+                
+                <!-- Threat Assessment Hero Card -->
+                <div class="bg-[#0f172a]/70 backdrop-blur-xl border border-slate-800 rounded-2xl p-5 shadow-2xl relative overflow-hidden">
+                    <div id="hero-gradient" class="absolute top-0 left-0 right-0 h-[2px] bg-rose-500"></div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-5 items-center">
+                        
+                        <!-- Left Meta: Subject, Sender, Verdict (8 Cols) -->
+                        <div class="md:col-span-8 space-y-2">
+                            <div class="flex items-center space-x-2">
+                                <span id="res-verdict-badge" class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-rose-500/10 text-rose-400 border border-rose-500/30">
+                                    MALICIOUS
+                                </span>
+                                <span class="text-xs text-slate-500 font-mono" id="res-date">2026-11-05</span>
+                            </div>
+                            
+                            <h1 class="text-lg font-bold text-white tracking-tight truncate" id="res-subject">
+                                URGENT: Your PayPal account has been restricted!
+                            </h1>
+                            
+                            <div class="space-y-1 text-xs font-mono pt-0.5">
+                                <div class="flex items-center text-slate-400">
+                                    <span class="text-slate-500 w-16">FROM:</span>
+                                    <span class="text-slate-200 truncate" id="res-sender">paypal@security.com</span>
+                                </div>
+                                <div class="flex items-center text-slate-400">
+                                    <span class="text-slate-500 w-16">REPLY-TO:</span>
+                                    <span class="text-rose-400 truncate" id="res-replyto">scammer@gmail.com</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right: Glowing Radial SVG Progress Gauge (4 Cols) -->
+                        <div class="md:col-span-4 flex flex-col items-center justify-center p-3 rounded-xl bg-[#090d16] border border-slate-800/80">
+                            <div class="relative w-24 h-24 flex items-center justify-center">
+                                <svg class="w-full h-full" viewBox="0 0 100 100">
+                                    <!-- Background Track -->
+                                    <circle class="text-slate-800" stroke-width="7" stroke="currentColor" fill="transparent" r="40" cx="50" cy="50"/>
+                                    <!-- Dynamic Progress Arc -->
+                                    <circle id="gauge-arc" class="gauge-circle text-rose-500" stroke-width="7" stroke-dasharray="251.2" stroke-dashoffset="251.2" stroke-linecap="round" stroke="currentColor" fill="transparent" r="40" cx="50" cy="50"/>
+                                </svg>
+                                <!-- Score In Center -->
+                                <div class="absolute flex flex-col items-center justify-center">
+                                    <span class="text-2xl font-black text-white tracking-tighter" id="res-score">75</span>
+                                    <span class="text-[8px] uppercase font-bold text-slate-500 tracking-wider">FRAUD SCORE</span>
+                                </div>
+                            </div>
+                            <span class="text-[10px] text-slate-400 mt-1 font-medium" id="res-verdict-text">Severe Phishing Vector</span>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Navigation Tabs (Pill Bar - Indigo Active Accent) -->
+                <div class="flex p-1 bg-[#0f172a]/70 backdrop-blur-md rounded-xl border border-slate-800 text-xs font-semibold space-x-1">
+                    <button class="tab-btn flex-1 py-2 rounded-lg bg-indigo-600 text-white shadow-md shadow-indigo-600/30 transition-all duration-150 flex items-center justify-center space-x-1.5" onclick="switchTab('tab-threats')">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                        <span>Threat Signals (<span id="count-threats">0</span>)</span>
+                    </button>
+                    <button class="tab-btn flex-1 py-2 rounded-lg text-slate-400 hover:text-slate-200 transition-all duration-150 flex items-center justify-center space-x-1.5" onclick="switchTab('tab-geo')">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path></svg>
+                        <span>Relay Route & Geolocation</span>
+                    </button>
+                    <button class="tab-btn flex-1 py-2 rounded-lg text-slate-400 hover:text-slate-200 transition-all duration-150 flex items-center justify-center space-x-1.5" onclick="switchTab('tab-auth')">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                        <span>Auth Seals & Content</span>
+                    </button>
+                </div>
+
+                <!-- TAB 1: Fired Threat Signals List -->
+                <div id="tab-threats" class="tab-pane space-y-3">
+                    <div class="bg-[#0f172a]/70 backdrop-blur-xl border border-slate-800 rounded-2xl p-5 shadow-xl space-y-3">
+                        <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+                            <h3 class="text-xs uppercase tracking-wider font-bold text-slate-300">
+                                Explainable Threat Attribution
+                            </h3>
+                            <span class="text-[10px] text-slate-500 font-mono">Weighted Risk Engine</span>
+                        </div>
+                        <div id="res-breakdown-list" class="space-y-2">
+                            <!-- Injected dynamically -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 2: Geolocation Trace Route & Map -->
+                <div id="tab-geo" class="tab-pane hidden space-y-5">
+                    
+                    <!-- Forensic Origin Context Banner -->
+                    <div class="bg-indigo-950/20 border border-indigo-500/20 rounded-xl p-3.5 text-xs flex items-center justify-between">
+                        <div class="flex items-center space-x-2 text-indigo-300">
+                            <svg class="w-4 h-4 text-cyan-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <span><strong>Forensic Rule:</strong> Sender claims PayPal (US), but earliest public TCP connection originated in Europe.</span>
+                        </div>
+                        <span class="font-mono text-cyan-400 font-bold px-2 py-0.5 rounded bg-cyan-950/60 border border-cyan-500/20 text-[11px]" id="geo-location-tag">Berlin, Germany</span>
+                    </div>
+
+                    <!-- Clean High-Contrast Dark Satellite/Cyber Map -->
+                    <div class="bg-[#0f172a]/70 backdrop-blur-xl border border-slate-800 rounded-2xl p-5 shadow-xl space-y-3">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-xs uppercase tracking-wider font-bold text-slate-300 flex items-center space-x-2">
+                                <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+                                <span>Attack Vector Transit Path</span>
+                            </h3>
+                            <span class="text-[10px] text-slate-400 font-mono">Earliest Public Ingress Node</span>
+                        </div>
+                        <div id="map" class="border border-slate-800 shadow-inner"></div>
+                    </div>
+
+                    <!-- Geolocation Metadata Cards (Cyan & Indigo Accents) -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-[#0f172a]/70 border border-slate-800 rounded-xl p-4 space-y-2 text-xs">
+                            <div class="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Physical Origin Telemetry</div>
+                            <div class="flex justify-between py-1 border-b border-slate-800/60"><span class="text-slate-400">Origin Public IP:</span><span class="font-mono text-cyan-400 font-bold" id="geo-ip">185.220.101.5</span></div>
+                            <div class="flex justify-between py-1 border-b border-slate-800/60"><span class="text-slate-400">City / State:</span><span class="text-slate-200 font-medium" id="geo-city">Berlin</span></div>
+                            <div class="flex justify-between py-1 border-b border-slate-800/60"><span class="text-slate-400">Country Code:</span><span class="text-slate-200 font-bold" id="geo-country">DE</span></div>
+                            <div class="flex justify-between py-1"><span class="text-slate-400">Coordinates:</span><span class="font-mono text-slate-300" id="geo-coords">52.5244, 13.4105</span></div>
+                        </div>
+
+                        <div class="bg-[#0f172a]/70 border border-slate-800 rounded-xl p-4 space-y-2 text-xs">
+                            <div class="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Autonomous System & Provider</div>
+                            <div class="flex justify-between py-1 border-b border-slate-800/60"><span class="text-slate-400">Network / ISP:</span><span class="text-slate-200 truncate max-w-[190px]" id="geo-org">Tor Network</span></div>
+                            <div class="flex justify-between py-1 border-b border-slate-800/60"><span class="text-slate-400">ASN:</span><span class="font-mono text-slate-300" id="geo-asn">AS60729</span></div>
+                            <div class="flex justify-between py-1"><span class="text-slate-400">Hosting / Tor Node:</span><span id="geo-hosting" class="px-2 py-0.5 rounded text-[10px] font-bold">Unknown</span></div>
+                        </div>
+                    </div>
+
+                    <!-- Visual Relay Hop Stepper Timeline -->
+                    <div class="bg-[#0f172a]/70 backdrop-blur-xl border border-slate-800 rounded-2xl p-5 shadow-xl space-y-3">
+                        <div class="flex items-center justify-between pb-2 border-b border-slate-800">
+                            <h3 class="text-xs uppercase tracking-wider font-bold text-slate-300">
+                                MTA Server Relay Chain (Bottom-to-Top Reconstructed)
+                            </h3>
+                            <span class="text-[10px] text-slate-500 font-mono">Hops Sequenced</span>
+                        </div>
+                        <div id="hops-stepper" class="space-y-2.5">
+                            <!-- Injected dynamically -->
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- TAB 3: Authentication Badges & Content -->
+                <div id="tab-auth" class="tab-pane hidden space-y-5">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        
+                        <!-- DNS Authentication Seals -->
+                        <div class="bg-[#0f172a]/70 backdrop-blur-xl border border-slate-800 rounded-2xl p-5 shadow-xl space-y-3.5">
+                            <h3 class="text-xs uppercase tracking-wider font-bold text-slate-300 pb-2 border-b border-slate-800">
+                                Cryptographic DNS Seals
+                            </h3>
+                            
+                            <div class="space-y-2 text-xs">
+                                <div class="flex justify-between items-center bg-[#090d16] p-2.5 rounded-xl border border-slate-800/80">
+                                    <div>
+                                        <div class="font-bold text-slate-200">SPF Validation</div>
+                                        <div class="text-[10px] text-slate-500">Authorized IP check</div>
+                                    </div>
+                                    <span id="auth-spf" class="px-2.5 py-1 rounded-md text-[11px] font-bold">None</span>
+                                </div>
+
+                                <div class="flex justify-between items-center bg-[#090d16] p-2.5 rounded-xl border border-slate-800/80">
+                                    <div>
+                                        <div class="font-bold text-slate-200">DKIM Signature</div>
+                                        <div class="text-[10px] text-slate-500">Public key RSA hash</div>
+                                    </div>
+                                    <span id="auth-dkim" class="px-2.5 py-1 rounded-md text-[11px] font-bold">None</span>
+                                </div>
+
+                                <div class="flex justify-between items-center bg-[#090d16] p-2.5 rounded-xl border border-slate-800/80">
+                                    <div>
+                                        <div class="font-bold text-slate-200">DMARC Alignment</div>
+                                        <div class="text-[10px] text-slate-500">Domain match verification</div>
+                                    </div>
+                                    <span id="auth-alignment" class="px-2.5 py-1 rounded-md text-[11px] font-bold">Mismatch</span>
+                                </div>
+
+                                <div class="flex justify-between items-center bg-[#090d16] p-2.5 rounded-xl border border-slate-800/80">
+                                    <div>
+                                        <div class="font-bold text-slate-200">DMARC Policy</div>
+                                        <div class="text-[10px] text-slate-500">Enforcement standard</div>
+                                    </div>
+                                    <span id="auth-dmarc" class="px-2.5 py-1 rounded-md text-[11px] font-bold">Policy: NONE</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Content & NLP Cues -->
+                        <div class="bg-[#0f172a]/70 backdrop-blur-xl border border-slate-800 rounded-2xl p-5 shadow-xl space-y-3.5">
+                            <h3 class="text-xs uppercase tracking-wider font-bold text-slate-300 pb-2 border-b border-slate-800">
+                                Semantic Content Signals
+                            </h3>
+
+                            <div class="space-y-2.5 text-xs">
+                                <div class="bg-[#090d16] p-2.5 rounded-xl border border-slate-800/80 space-y-1">
+                                    <span class="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Urgency Panic Triggers:</span>
+                                    <p id="content-urgency" class="text-amber-400 font-medium">None detected</p>
+                                </div>
+
+                                <div class="bg-[#090d16] p-2.5 rounded-xl border border-slate-800/80 space-y-1">
+                                    <span class="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Brand Impersonation Target:</span>
+                                    <p id="content-impersonation" class="text-slate-300 font-medium">None detected</p>
+                                </div>
+
+                                <div class="bg-[#090d16] p-2.5 rounded-xl border border-slate-800/80 space-y-1">
+                                    <span class="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Flagged Hyperlinks:</span>
+                                    <div id="content-links" class="text-rose-400 space-y-1 font-mono text-[11px]">None</div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-[#080c14] border-t border-slate-800/80 py-3 px-6 text-center text-xs text-slate-500">
+        AegisMail Platform • RFC 5322 Standard Compliant • FastAPI Backend
+    </footer>
+
+    <!-- App Logic (Cache-busted v5.0) -->
+    <script src="/frontend/app.js?v=5.0"></script>
+</body>
+</html>

